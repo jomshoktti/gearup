@@ -915,7 +915,7 @@
     </div>
   </section>
 
-  <!-- Contact Section (ইমেইল রিমুভ করা হয়েছে) -->
+  <!-- Contact Section -->
   <section class="contact-section" id="contact">
     <div class="container">
       <h2 class="section-title">যোগাযোগ করুন</h2>
@@ -982,13 +982,13 @@
         <!-- নাম -->
         <div class="form-group">
           <label for="name">নাম: <span>*</span></label>
-          <input type="text" id="name" required placeholder="আপনার নাম লিখুন" />
+          <input type="text" id="name" name="name" required placeholder="আপনার নাম লিখুন" />
         </div>
 
         <!-- পরিমাণ -->
         <div class="form-group">
           <label for="quantity">পরিমাণ: <span>*</span></label>
-          <input type="number" id="quantity" required min="1" value="1" placeholder="কত পিস নিতে চান?" oninput="calculateTotal()" />
+          <input type="number" id="quantity" name="quantity" required min="1" value="1" placeholder="কত পিস নিতে চান?" oninput="calculateTotal()" />
         </div>
 
         <!-- মোট মূল্য দেখানোর বক্স -->
@@ -999,7 +999,7 @@
         <!-- বিভাগ -->
         <div class="form-group">
           <label for="division">বিভাগ: <span>*</span></label>
-          <select id="division" required onchange="updateDistricts()">
+          <select id="division" name="division" required onchange="updateDistricts()">
             <option value="">-- বিভাগ নির্বাচন করুন --</option>
             <option value="ঢাকা">ঢাকা</option>
             <option value="চট্টগ্রাম">চট্টগ্রাম</option>
@@ -1015,7 +1015,7 @@
         <!-- জেলা -->
         <div class="form-group">
           <label for="district">জেলা: <span>*</span></label>
-          <select id="district" required onchange="updateUpazilas()">
+          <select id="district" name="district" required onchange="updateUpazilas()">
             <option value="">-- প্রথমে বিভাগ নির্বাচন করুন --</option>
           </select>
         </div>
@@ -1023,7 +1023,7 @@
         <!-- উপজেলা -->
         <div class="form-group">
           <label for="thana">থানা/উপজেলা: <span>*</span></label>
-          <select id="thana" required>
+          <select id="thana" name="thana" required>
             <option value="">-- প্রথমে জেলা নির্বাচন করুন --</option>
           </select>
         </div>
@@ -1031,13 +1031,13 @@
         <!-- ঠিকানা -->
         <div class="form-group">
           <label for="address">ঠিকানা: <span>*</span></label>
-          <textarea id="address" required placeholder="বিস্তারিত ঠিকানা লিখুন"></textarea>
+          <textarea id="address" name="address" required placeholder="বিস্তারিত ঠিকানা লিখুন"></textarea>
         </div>
 
         <!-- মোবাইল নম্বর -->
         <div class="form-group">
           <label for="mobile">মোবাইল নম্বর: <span>*</span></label>
-          <input type="tel" id="mobile" required pattern="01[3-9][0-9]{8}" placeholder="১১ ডিজিটের মোবাইল নম্বর" />
+          <input type="tel" id="mobile" name="mobile" required pattern="01[3-9][0-9]{8}" placeholder="১১ ডিজিটের মোবাইল নম্বর" />
         </div>
 
         <button type="submit" class="submit-btn">অর্ডার কনফার্ম করুন</button>
@@ -1077,6 +1077,9 @@
   <script>
     // পণ্যের মূল্য
     const productPrice = 1490;
+    
+    // গুগল স্ক্রিপ্টের URL
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzFjLVmh2WbFlvSppkTb0GAL5ZOB2GEqH2RqAvJ3PWq2T0sAB8xAfiXUfUGS9BeSavd/exec';
 
     // JavaScript for Modal, Form and Location Data
     const bdData = {
@@ -1237,21 +1240,44 @@
       return 'ORD-' + randomNum;
     }
 
+    // ফর্ম সাবমিট (এখন গুগল শীটে ডেটা পাঠাবে)
     function submitForm(e) {
       e.preventDefault();
       
-      document.getElementById('orderModal').classList.remove('active');
-      
-      const newOrderId = generateOrderId();
-      document.getElementById('displayOrderId').innerText = newOrderId;
-      
-      document.getElementById('orderForm').reset();
-      document.getElementById('district').innerHTML = '<option value="">-- প্রথমে বিভাগ নির্বাচন করুন --</option>';
-      document.getElementById('thana').innerHTML = '<option value="">-- প্রথমে জেলা নির্বাচন করুন --</option>';
-      
-      document.getElementById('totalPrice').innerText = productPrice;
+      // সাবমিট বাটনে লোডিং টেক্সট দেখানো
+      const submitBtn = document.querySelector('.submit-btn');
+      const originalText = submitBtn.innerText;
+      submitBtn.innerText = 'অপেক্ষা করুন...';
+      submitBtn.disabled = true;
 
-      document.getElementById('successModal').classList.add('active');
+      // ফর্মের ডেটা সংগ্রহ
+      const formData = new FormData(document.getElementById('orderForm'));
+      
+      // গুগল স্ক্রিপ্টে ডেটা পাঠানো (fetch API)
+      fetch(scriptURL, { method: 'POST', body: formData })
+        .then(response => {
+          // সফল হলে যা হবে
+          document.getElementById('orderModal').classList.remove('active');
+          
+          const newOrderId = generateOrderId();
+          document.getElementById('displayOrderId').innerText = newOrderId;
+          
+          document.getElementById('orderForm').reset();
+          document.getElementById('district').innerHTML = '<option value="">-- প্রথমে বিভাগ নির্বাচন করুন --</option>';
+          document.getElementById('thana').innerHTML = '<option value="">-- প্রথমে জেলা নির্বাচন করুন --</option>';
+          document.getElementById('totalPrice').innerText = productPrice;
+
+          document.getElementById('successModal').classList.add('active');
+        })
+        .catch(error => {
+          console.error('Error!', error.message);
+          alert('দুঃখিত, ইন্টারনেট সমস্যার কারণে অর্ডারটি সেভ করা যায়নি। দয়া করে আবার চেষ্টা করুন।');
+        })
+        .finally(() => {
+          // বাটন আবার আগের অবস্থায় ফিরিয়ে আনা
+          submitBtn.innerText = originalText;
+          submitBtn.disabled = false;
+        });
     }
 
     function closeSuccessModal() {
